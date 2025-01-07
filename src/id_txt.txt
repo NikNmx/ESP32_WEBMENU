@@ -1,0 +1,3 @@
+<input type="text" id="ssid" placeholder="Введіть SSID">
+<input type="password" id="password" placeholder="Введіть пароль">
+<input type="text" id="ssid_AP" placeholder="Введіть AP ssid">
