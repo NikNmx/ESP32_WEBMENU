@@ -1,36 +1,40 @@
-#include <DallasTemperature.h>
+//#include <DallasTemperature.h>
 #include <EEPROM.h>
 #include <ESP8266WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <NTPClient.h>
-#include <OneWire.h>
-#include <RTClib.h>
-#include <SPI.h>
+//#include <OneWire.h>
+//#include <RTClib.h>
+//#include <SPI.h>
 #include <WiFiUdp.h>
 #include <pages.h>
+#include <GyverDBFile.h>
+#ifdef ESP8266
+#include <ESP8266WiFi.h>
+#else
+#include <WiFi.h>
+#endif
+
+#include <GyverDBFile.h>
+#include <LittleFS.h>
+GyverDBFile db(&LittleFS, "/data2.db");
+
+#include <SettingsGyver.h>
+SettingsGyver sett("My Settings", &db);
+
+DB_KEYS(
+    keys,
+    key1,
+    key2,
+    key3);
+
+
 
 #define MAX_EEPROM_STRING_SIZE 255
 
-// eeprom
-const byte seconds_offset_address = 0;
-int seconds_offset;
 
-const byte temperature_offset_address = 5;
-int temperature_offset;
-
-const byte eeprom_empty_address = 10;
-bool eeprom_empty;
-
-const byte NTP_URL_address = 16;
-String NTP_URL;
-
-const int oneWireBus = 2;
-String h_hours, h_minutes, h_seconds;
-String h_month_day, h_month;
-int year;
-
-const char *ap_ssid = "Clock_AP";
-const char *ap_password = "vfdclock";
+const char *ap_ssid = "AP_1";
+const char *ap_password = "1234567890";
 IPAddress apIP(192, 168, 4, 2);
 
 // counters
@@ -41,49 +45,20 @@ unsigned long temp_millis = 0;
 
 // classes
 DateTime now;
-// RTC_DS3231 rtc;
-RTC_DS1307 rtc;
 WiFiUDP ntpUDP;
-OneWire oneWire(oneWireBus);
-DallasTemperature sensors(&oneWire);
-NTPClient timeClient(ntpUDP, "192.168.1.1", seconds_offset, 1000);
 AsyncWebServer server(80);
 
-const char date_div[] = "\\|/-";
-const char time_div[] = ": : ";
-
-byte week_days[][10] = {
-    {0x8D, 0xA5, 0xA4, 0x69, 0xAB, 0xEF, 0x20, 0x20, 0x20, 0x20},  // Неділя
-    {0x8F, 0xAE, 0xAD, 0xA5, 0xA4, 0x69, 0xAB, 0xAE, 0xAA, 0x20},  // Понеділок
-    {0x82, 0x69, 0xA2, 0xE2, 0xAE, 0xE0, 0xAE, 0xAA, 0x20, 0x20},  // Вівторок
-    {0x91, 0xA5, 0xE0, 0xA5, 0xA4, 0xA0, 0x20, 0x20, 0x20, 0x20},  // Середа
-    {0x97, 0xA5, 0xE2, 0xA2, 0xA5, 0xE0, 0x20, 0x20, 0x20, 0x20},  // Четвер
-    {0x8F, 0x27, 0xEF, 0xE2, 0xAD, 0xA8, 0xE6, 0xEF, 0x20, 0x20},  // П'ятниця
-    {0x91, 0xE3, 0xA1, 0xAE, 0xE2, 0xA0, 0x20, 0x20, 0x20, 0x20}  // Субота
-};
-
 void setup() {
-    EEPROM.begin(512);
-    delay(20);
-    readSettingsFromEEPROM();
     Serial.begin(9600);
-    sensors.begin();
-    rtc.begin();
-    clearVFD();
     handleWiFi();
-    clearVFD();
-    now = rtc.now();
-    calculateTime();
-    drawTime();
-    drawTemp();
 }
 
 void loop() {
     current_millis = millis();
     if (current_millis - last_millis >= 500) {
-        now = rtc.now();
-        calculateTime();
-        drawTime();
+//        now = rtc.now();
+//        calculateTime();
+//        drawTime();
         div_step++;
         if (div_step > 3) {
             div_step = 0;
@@ -114,23 +89,6 @@ void setCursorVFD(byte place) {
     Serial.write(cursor_position, sizeof(cursor_position));
 }
 
-void clearVFD() {
-    setCursorVFD(0x31);
-    Serial.print("                                        ");
-    setCursorVFD(0x31);
-}
-
-void drawTime() {
-    setCursorVFD(0x31);
-    Serial.print(h_hours + time_div[div_step] + h_minutes + time_div[div_step] +
-                 h_seconds);
-    setCursorVFD(0x45);
-    Serial.write(week_days[now.dayOfTheWeek()],
-                 sizeof(week_days[now.dayOfTheWeek()]));
-    setCursorVFD(0x4F);
-    Serial.print(h_month_day + date_div[div_step] + h_month +
-                 date_div[div_step] + year);
-}
 
 void calculateTime() {
     h_hours = unitHandler(now.hour());
@@ -157,20 +115,6 @@ void adjustRTCviaNTP() {
 void adjustRTCviaPhone(int hours, int minutes, int seconds, int year, int month,
                        int day) {
     rtc.adjust(DateTime(year, month, day, hours, minutes, seconds));
-}
-
-void drawTemp() {
-    setCursorVFD(0x3E);
-    Serial.print(getTemp());
-    Serial.write(0xF8);
-    Serial.print('C');
-}
-
-float getTemp() {
-    sensors.requestTemperatures();
-    float temperatureC = sensors.getTempCByIndex(0);
-    temperatureC = temperatureC + temperature_offset;
-    return temperatureC;
 }
 
 void startWebServer() {
@@ -230,49 +174,33 @@ void startWebServer() {
         WiFi.persistent(true);
         WiFi.begin(ssid, password);
     });
+
+    server.on("/sendParameters", HTTP_GET, [](AsyncWebServerRequest *request) {
+        String ssid = request->getParam("ssid")->value();
+        String pass = request->getParam("pass")->value();
+        String ssid_AP = request->getParam("ssid_AP")->value();
+        String pass_AP = request->getParam("pass_AP")->value();
+        String ntp_server = request->getParam("ntp_server")->value();
+        String timezone = request->getParam("timezone")->value();
+        Bool inverse_input1 = request->getParam("inverse_input1")->value();
+        Bool scales = request->getParam("scales")->value();
+        String p2 = request->getParam("p2")->value();
+        String p3 = request->getParam("p3")->value();
+        
+
+//&ssid=${ssid}&pass=${pass}&ssid_AP=${ssid_AP}&pass_AP=${pass_AP}
+//&ntp_server=${ntp_server}&timezone=${timezone}
+//&inverse_input1=${inverse_input1}&scales=${scales}&p2=${p2}&p3=${p3}
+
+
+        request->send(200, "text/plain", "200");
+        delay(20);
+       
+    });
     server.begin();
 }
 
-void writeStringToEEPROM(int address_offset, const String &strToWrite) {
-    int len = strToWrite.length();
-    if (len > MAX_EEPROM_STRING_SIZE) {
-        len = MAX_EEPROM_STRING_SIZE;
-    }
-    EEPROM.write(address_offset, len);
-    for (int i = 0; i < len; i++) {
-        EEPROM.write(address_offset + 1 + i, strToWrite[i]);
-    }
-    EEPROM.commit();
-}
 
-String readStringFromEEPROM(int address_offset) {
-    int len = EEPROM.read(address_offset);
-    if (len < 0 || len > MAX_EEPROM_STRING_SIZE) {
-        return String();
-    }
-    char data[len + 1];
-    for (int i = 0; i < len; i++) {
-        data[i] = EEPROM.read(address_offset + 1 + i);
-    }
-    data[len] = '\0';
-    return String(data);
-}
-
-void readSettingsFromEEPROM() {
-    EEPROM.get(eeprom_empty_address, eeprom_empty);
-    if (eeprom_empty) {
-        EEPROM.put(seconds_offset_address, 7200);
-        EEPROM.put(temperature_offset_address, 0);
-        EEPROM.put(eeprom_empty_address, false);
-        EEPROM.commit();
-        writeStringToEEPROM(NTP_URL_address, "ntp1.time.in.ua");
-
-    } else {
-        EEPROM.get(seconds_offset_address, seconds_offset);
-        EEPROM.get(temperature_offset_address, temperature_offset);
-        NTP_URL = readStringFromEEPROM(NTP_URL_address);
-    }
-}
 
 void handleWiFi() {
     WiFi.mode(WIFI_STA);
