@@ -1,6 +1,6 @@
 //#include <DallasTemperature.h>
 #include <EEPROM.h>
-#include <ESP8266WiFi.h>
+//#include <ESP8266WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <NTPClient.h>
 //#include <OneWire.h>
@@ -19,14 +19,19 @@
 #include <LittleFS.h>
 GyverDBFile db(&LittleFS, "/data2.db");
 
-#include <SettingsGyver.h>
-SettingsGyver sett("My Settings", &db);
+//#include <SettingsGyver.h>
+//SettingsGyver sett("My Settings", &db);
 
+//Create DB_structure
 DB_KEYS(
     keys,
-    key1,
-    key2,
-    key3);
+    ssid,
+    pass,
+    ssid_AP,
+    pass_AP,
+    NTP_server,
+    timezone);
+
 
 
 
@@ -182,8 +187,8 @@ void startWebServer() {
         String pass_AP = request->getParam("pass_AP")->value();
         String ntp_server = request->getParam("ntp_server")->value();
         String timezone = request->getParam("timezone")->value();
-        Bool inverse_input1 = request->getParam("inverse_input1")->value();
-        Bool scales = request->getParam("scales")->value();
+        bool inverse_input1 = request->getParam("inverse_input1")->value();
+        bool scales = request->getParam("scales")->value();
         String p2 = request->getParam("p2")->value();
         String p3 = request->getParam("p3")->value();
         
