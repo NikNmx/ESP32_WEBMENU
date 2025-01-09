@@ -7,10 +7,11 @@ const char* main_page = R"rawliteral(
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!--    <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAB2lBMVEVHcEwrKyszMzM0NDQuLi42NjYxMTEmJiY8PDwnJyctLS08PDw5OTk5OTk1NTUlJSUvLy83NzcmJiY8PDwmJiYwMDA8PDw8PDw4ODgqKioyMjIpKSkpKSksLCw7Ozs5OTkoKCgaGhozMzM6OjopKSkqKio1NTUgICAnJychISEoKCgXFxcmJiYYGBgZGRknJyc6Ojr5+fn6+vooKCgpKSk7Ozs8PDzp6enq6urt7e0qKio1NTUyMjLr6+vu7u43NzcvLy8sLCzn5+fs7OzY2Njv7+/FxcXm5uY5OTk2NjY0NDQxMTEwMDA4ODgrKyszMzMuLi4tLS3w8PDR0dH4+Pjz8/NERETX19fW1tby8vL29vba2trMzMzx8fHNzc1ZWVlubm6VlZWoqKienp7Q0NCMjIy+vr6GhobHx8e5ubmdnZ1dXV3g4ODLy8v39/eOjo7BwcHIyMjo6Oi8vLxUVFTT09OQkJB3d3fU1NTKysp6enpycnKPj4+goKCZmZmzs7OLi4vl5eWlpaVlZWVTU1Pb29tNTU3j4+O1tbXV1dV7e3tHR0erq6tmZmbd3d2vr6/GxsZGRkbf399paWn09PTe3t6AgID19fWioqKJiYlcXFzS0tLJycmBgYHL+VRNAAAAL3RSTlMA39/f39/f39/V39Xdvt9s39/dbL7f3b7f39/dvt/VbAgIH2wICB8fbB9sCAgICCCzWX0AAAHZSURBVDjLfdNldxoBEIXhCwFa4u5J3ZWtBEJCWwqhkNRYIEAgxF0br7u763/t3IVCTkv3+TDD2XeWwxcAbK+qq92aR21d1R6InUWn/6toL3C49ZSO1t3YdlzXLpToH5Sg+AJFhtVJDw3e1NakOhzRQjHqL4pIn6KsPVXE9QHOiVchpS/CUo+KM2JKHrocSla4TcYUSwXMXKqSh8pihtkvVDufzCU3d2+CxYxSp7izLD9C2fgQynX7w/sspSjg8szZ+PDz103fEPewFMAYEL02jWs5asvpZTHCeFlkDmwbqfCmAxYjGjtE9sXVX57sQZSlERauGwOh+MdwLBb70R3IXCSn77JYYOkW4+PJoOZnT2Al9iUkB+Hnt1ksqOkRI96MtdS6zGA4LjdRlhqUnxX9rrSljj+fXEFvP0s5TFwJR9r3b46cBIsJpitidubaefqUXtT5epbFhMKr4s27t51/WX9xi6UQLefE4nv7P550sbTAwLXQlscCiwGGS2Le7XY/eyTDvaJyzozImGcxoKFd+Bd9vumXPvEgxbn0+J5vws/SgCaudufo2FAXDa5qa2hs1KmFJjSf1NWM/Sd0HcQR6zEd1h3APp0L6wH+vQ+VVVduyaOyuuwo8BsKeOtaDbX/XwAAAABJRU5ErkJggg==">
+        <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAB2lBMVEVHcEwrKyszMzM0NDQuLi42NjYxMTEmJiY8PDwnJyctLS08PDw5OTk5OTk1NTUlJSUvLy83NzcmJiY8PDwmJiYwMDA8PDw8PDw4ODgqKioyMjIpKSkpKSksLCw7Ozs5OTkoKCgaGhozMzM6OjopKSkqKio1NTUgICAnJychISEoKCgXFxcmJiYYGBgZGRknJyc6Ojr5+fn6+vooKCgpKSk7Ozs8PDzp6enq6urt7e0qKio1NTUyMjLr6+vu7u43NzcvLy8sLCzn5+fs7OzY2Njv7+/FxcXm5uY5OTk2NjY0NDQxMTEwMDA4ODgrKyszMzMuLi4tLS3w8PDR0dH4+Pjz8/NERETX19fW1tby8vL29vba2trMzMzx8fHNzc1ZWVlubm6VlZWoqKienp7Q0NCMjIy+vr6GhobHx8e5ubmdnZ1dXV3g4ODLy8v39/eOjo7BwcHIyMjo6Oi8vLxUVFTT09OQkJB3d3fU1NTKysp6enpycnKPj4+goKCZmZmzs7OLi4vl5eWlpaVlZWVTU1Pb29tNTU3j4+O1tbXV1dV7e3tHR0erq6tmZmbd3d2vr6/GxsZGRkbf399paWn09PTe3t6AgID19fWioqKJiYlcXFzS0tLJycmBgYHL+VRNAAAAL3RSTlMA39/f39/f39/V39Xdvt9s39/dbL7f3b7f39/dvt/VbAgIH2wICB8fbB9sCAgICCCzWX0AAAHZSURBVDjLfdNldxoBEIXhCwFa4u5J3ZWtBEJCWwqhkNRYIEAgxF0br7u763/t3IVCTkv3+TDD2XeWwxcAbK+qq92aR21d1R6InUWn/6toL3C49ZSO1t3YdlzXLpToH5Sg+AJFhtVJDw3e1NakOhzRQjHqL4pIn6KsPVXE9QHOiVchpS/CUo+KM2JKHrocSla4TcYUSwXMXKqSh8pihtkvVDufzCU3d2+CxYxSp7izLD9C2fgQynX7w/sspSjg8szZ+PDz103fEPewFMAYEL02jWs5asvpZTHCeFlkDmwbqfCmAxYjGjtE9sXVX57sQZSlERauGwOh+MdwLBb70R3IXCSn77JYYOkW4+PJoOZnT2Al9iUkB+Hnt1ksqOkRI96MtdS6zGA4LjdRlhqUnxX9rrSljj+fXEFvP0s5TFwJR9r3b46cBIsJpitidubaefqUXtT5epbFhMKr4s27t51/WX9xi6UQLefE4nv7P550sbTAwLXQlscCiwGGS2Le7XY/eyTDvaJyzozImGcxoKFd+Bd9vumXPvEgxbn0+J5vws/SgCaudufo2FAXDa5qa2hs1KmFJjSf1NWM/Sd0HcQR6zEd1h3APp0L6wH+vQ+VVVduyaOyuuwo8BsKeOtaDbX/XwAAAABJRU5ErkJggg==">
+    <!--        
             <img width="16" height="16" alt="star" src="data:image/gif;base64,R0lGODlhEAAQAMQAAORHHOVSKudfOulrSOp3WOyDZu6QdvCchPGolfO0o/XBs/fNwfjZ0frl3/zy7////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAkAABAALAAAAAAQABAAAAVVICSOZGlCQAosJ6mu7fiyZeKqNKToQGDsM8hBADgUXoGAiqhSvp5QAnQKGIgUhwFUYLCVDFCrKUE1lBavAViFIDlTImbKC5Gm2hB0SlBCBMQiB0UjIQA7">
-
---><title>Налаштування</title>
+-->
+<title>Налаштування</title>
     <style>
         
         * {
@@ -158,7 +159,7 @@ const char* main_page = R"rawliteral(
         <img class="img-center" width="36" height="36" alt="star" src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAB2lBMVEVHcEwrKyszMzM0NDQuLi42NjYxMTEmJiY8PDwnJyctLS08PDw5OTk5OTk1NTUlJSUvLy83NzcmJiY8PDwmJiYwMDA8PDw8PDw4ODgqKioyMjIpKSkpKSksLCw7Ozs5OTkoKCgaGhozMzM6OjopKSkqKio1NTUgICAnJychISEoKCgXFxcmJiYYGBgZGRknJyc6Ojr5+fn6+vooKCgpKSk7Ozs8PDzp6enq6urt7e0qKio1NTUyMjLr6+vu7u43NzcvLy8sLCzn5+fs7OzY2Njv7+/FxcXm5uY5OTk2NjY0NDQxMTEwMDA4ODgrKyszMzMuLi4tLS3w8PDR0dH4+Pjz8/NERETX19fW1tby8vL29vba2trMzMzx8fHNzc1ZWVlubm6VlZWoqKienp7Q0NCMjIy+vr6GhobHx8e5ubmdnZ1dXV3g4ODLy8v39/eOjo7BwcHIyMjo6Oi8vLxUVFTT09OQkJB3d3fU1NTKysp6enpycnKPj4+goKCZmZmzs7OLi4vl5eWlpaVlZWVTU1Pb29tNTU3j4+O1tbXV1dV7e3tHR0erq6tmZmbd3d2vr6/GxsZGRkbf399paWn09PTe3t6AgID19fWioqKJiYlcXFzS0tLJycmBgYHL+VRNAAAAL3RSTlMA39/f39/f39/V39Xdvt9s39/dbL7f3b7f39/dvt/VbAgIH2wICB8fbB9sCAgICCCzWX0AAAHZSURBVDjLfdNldxoBEIXhCwFa4u5J3ZWtBEJCWwqhkNRYIEAgxF0br7u763/t3IVCTkv3+TDD2XeWwxcAbK+qq92aR21d1R6InUWn/6toL3C49ZSO1t3YdlzXLpToH5Sg+AJFhtVJDw3e1NakOhzRQjHqL4pIn6KsPVXE9QHOiVchpS/CUo+KM2JKHrocSla4TcYUSwXMXKqSh8pihtkvVDufzCU3d2+CxYxSp7izLD9C2fgQynX7w/sspSjg8szZ+PDz103fEPewFMAYEL02jWs5asvpZTHCeFlkDmwbqfCmAxYjGjtE9sXVX57sQZSlERauGwOh+MdwLBb70R3IXCSn77JYYOkW4+PJoOZnT2Al9iUkB+Hnt1ksqOkRI96MtdS6zGA4LjdRlhqUnxX9rrSljj+fXEFvP0s5TFwJR9r3b46cBIsJpitidubaefqUXtT5epbFhMKr4s27t51/WX9xi6UQLefE4nv7P550sbTAwLXQlscCiwGGS2Le7XY/eyTDvaJyzozImGcxoKFd+Bd9vumXPvEgxbn0+J5vws/SgCaudufo2FAXDa5qa2hs1KmFJjSf1NWM/Sd0HcQR6zEd1h3APp0L6wH+vQ+VVVduyaOyuuwo8BsKeOtaDbX/XwAAAABJRU5ErkJggg==">
         
         <h1>Налаштування</h1>
-      <!--  //comment1 *-->
+      <!--  //comment1  -->
         
       <div class="divider"></div>
 
@@ -179,11 +180,11 @@ const char* main_page = R"rawliteral(
         <div class="section-title">Налаштування WiFi_AP</div>
 
         <div class="form-group">
-            <label for="p">parameter1:</label>
+            <label for="ssid_AP">SSID AP:</label>
             <input type="text" id="ssid_AP" placeholder="Введіть AP ssid">
         </div>
         <div class="form-group">
-            <label for="passAP">Password AP:</label>
+            <label for="pass_AP">Password AP:</label>
             <input type="password" id="pass_AP" placeholder="Введіть пароль">
         </div>
         
@@ -288,13 +289,16 @@ function sendParameters() {
     const p2 = document.getElementById("p2").value;
     const p3 = document.getElementById("p3").value;
     const url = `/sendParameters?&ssid=${ssid}&pass=${pass}&ssid_AP=${ssid_AP}&pass_AP=${pass_AP}&ntp_server=${ntp_server}&timezone=${timezone}&inverse_input1=${inverse_input1}&scales=${scales}&p2=${p2}&p3=${p3}`
-    fetch("/sync_time");
+    const now = new Date();
+    fetch(url);
     //alert("Ok pressed!!!");
     alert(`${url}`);
-    alert(`${time1}`);
+    
     //const p8 = confirm("Налаштування відправлені");
     //if (p8 == 1) {alert("Ok pressed!!!")};
-    //if (confirm("N2")) {alert("Ok pressed!!!")};  
+    if (confirm(`Sure? ${url}`)) {
+    fetch(url);
+    alert("Ok pressed!!!")};  
 
 
 }
@@ -314,10 +318,12 @@ function getData() {
     fetch('/get_data')
         .then(response => response.json())
         .then(data => {
-            document.getElementById('ntp_server').value = data.NTP;
-            document.getElementById('timezone').value = data.seconds_offset;
-            document.getElementById('temperature').value = data.temp_offset;
+            //document.getElementById('ntp_server').value = data.ntp_server;
+            //document.getElementById('timezone').value = data.timezone;
+            document.getElementById('password').value = data.pass;
             document.getElementById('ssid').value = data.ssid;
+            document.getElementById('scales').checked = data.scales;
+            document.getElementById('timezone').value = data.timezone;
         })
         .catch(error => console.error('Error:', error));
 }
