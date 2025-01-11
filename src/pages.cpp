@@ -288,7 +288,7 @@ function sendParameters() {
     const scales = document.getElementById("scales").checked;
     const p2 = document.getElementById("p2").value;
     const p3 = document.getElementById("p3").value;
-    const url = `/sendParameters?&ssid=${ssid}&pass=${pass}&ssid_AP=${ssid_AP}&pass_AP=${pass_AP}&ntp_server=${ntp_server}&timezone=${timezone}&inverse_input1=${inverse_input1}&scales=${scales}&p2=${p2}&p3=${p3}`
+    const url = `/sendParameters?&ssid=${ssid}&pass=${pass}&ssid_AP=${ssid_AP}&pass_AP=${pass_AP}&ntp_server=${ntp_server}&timezone=${timezone}&inverse_input1=${inverse_input1}&scales=${scales}&p2=${p2}&p3=${p3}`;
     const now = new Date();
     fetch(url);
     //alert("Ok pressed!!!");
@@ -308,8 +308,12 @@ function sendWiFi() {
     const e = document.getElementById("ssid");
     const e2 = document.getElementById("password");
     const ssid = e.value;
-    const password = e2.value;
-    const url = `/set_wifi?&ssid=${ssid}&password=${password}`;
+    const pass = e2.value;
+    const eAP = document.getElementById("ssid_AP");
+    const e2AP = document.getElementById("pass_AP");
+    const ssid_AP = eAP.value;
+    const pass_AP = e2AP.value;
+    const url = `/set_wifi?&ssid=${ssid}&pass=${pass}&ssid_AP=${ssid_AP}&pass_AP=${pass_AP}`;
     alert("Налаштування відправлені");
     fetch(url);
     }
@@ -320,10 +324,17 @@ function getData() {
         .then(data => {
             //document.getElementById('ntp_server').value = data.ntp_server;
             //document.getElementById('timezone').value = data.timezone;
-            document.getElementById('password').value = data.pass;
             document.getElementById('ssid').value = data.ssid;
-            document.getElementById('scales').checked = data.scales;
+            document.getElementById('password').value = data.pass;
+            document.getElementById('ssid_AP').value = data.ssid_AP;
+            document.getElementById('pass_AP').value = data.pass_AP;
+            document.getElementById('ntp_server').value = data.ntp_server;
             document.getElementById('timezone').value = data.timezone;
+            document.getElementById('inverse_input1').checked = data.inverse_input1;
+            document.getElementById('scales').checked = data.scales;
+            document.getElementById('p2').value = data.p2;
+            document.getElementById('p3').value = data.p3;
+            
         })
         .catch(error => console.error('Error:', error));
 }

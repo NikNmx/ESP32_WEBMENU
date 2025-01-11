@@ -2,7 +2,7 @@
 #include <EEPROM.h>
 //#include <ESP8266WiFi.h>
 #include <ESPAsyncWebServer.h>
-//#include <NTPClient.h>
+#include <NTPClient.h>
 //#include <OneWire.h>
 //#include <RTClib.h>
 //#include <SPI.h>
@@ -18,19 +18,18 @@
 
 
 #include <LittleFS.h>
-GyverDBFile db(&LittleFS, "/data2.db");
+GyverDBFile db(&LittleFS, "/data3.db");
 
 //#include <SettingsGyver.h>
 //SettingsGyver sett("My Settings", &db);
 
 //Create DB_structure
 enum dbkeys : size_t {
-    dbkeys,
     db_ssid = SH("db_ssid"),
     db_pass = SH("db_pass"),
     db_ssid_AP = SH("db_ssid_AP"),
     db_pass_AP = SH("db_pass_AP"), 
-    db_NTP_server = SH("db_NTP_server"),
+    db_ntp_server = SH("db_NTP_server"),
     db_timezone = SH("db_timezone"),
     db_inverse_input1 = SH("db_inverse_input1"),
     db_scales = SH("db_scales"),
@@ -42,10 +41,11 @@ enum dbkeys : size_t {
 
 #define MAX_EEPROM_STRING_SIZE 256
 
-
-const char *ssid = "IoTT";
-const char *password = "1111qQ1111qQ,@,@";
-void handleWiFi();
+static String ssid = "IoTT111";
+static String password = "1111qQ1111qQ,@,@";
+static String ssid_AP = "AP1";
+static String password_AP = "00000000";
+    
 
 IPAddress apIP(192, 168, 4, 2);
 
@@ -59,12 +59,30 @@ unsigned long temp_millis = 0;
 //DateTime now;
 WiFiUDP ntpUDP;
 AsyncWebServer server(80);
-
+void handleWiFi();
 void setup() {
-    LittleFS.begin();
+    LittleFS.begin(true);
     db.begin();
     Serial.begin(115200);
     Serial.println("setup_begin\n");
+    
+    
+    db.init(dbkeys::db_ssid, "labelssid");
+    db.init(dbkeys::db_pass, "12345678");
+    db.init(dbkeys::db_ssid_AP, "AP_IoTT");
+    db.init(dbkeys::db_pass_AP, "12345678");
+    db.init(dbkeys::db_ntp_server, "pool.ntp.org");
+    db.init(dbkeys::db_timezone, "7200");
+    db.init(dbkeys::db_inverse_input1, "false");
+    db.init(dbkeys::db_scales, "true");
+    db.init(dbkeys::db_p2, "1234");
+    db.init(dbkeys::db_p3, "param");
+    
+    ssid = db[dbkeys::db_ssid].toString();
+    password = db[dbkeys::db_pass].toString();
+    
+    ssid_AP = db[dbkeys::db_ssid_AP].toString();
+    password_AP = db[dbkeys::db_pass_AP].toString();
     
     handleWiFi();
 
@@ -134,25 +152,64 @@ void startWebServer() {
         request->send(200, "text/plain", "200");
     });
     server.on("/get_data", HTTP_GET, [](AsyncWebServerRequest *request) {
-        char buffer[100];
+        char buffer[300];
+        //Variant  
+        //String aaa;
+        //aaa = db[SH("db_ssid")].toString();
+
+        //String bbb;
+        //bbb = db[SH("db_pass")].toString();
         sprintf(buffer,
-                "{\"ssid\": \"ssid_id\", \"pass\": \"procent_s\", \"scales\": \"true\", \"timezone\": \"10800\"  }",
+                "{\"ssid\": \"%s\", \"pass\": \"%s\",\"ssid_AP\": \"%s\", \"pass_AP\": \"%s\", \"ntp_server\": \"%s\", \"timezone\": \"%s\", \"inverse_input1\": \"%s\", \"scales\": \"%s\", \"p2\": \"%s\", \"p3\": \"%s\" }",
+                
                 //NTP_URL.c_str(), temperature_offset, seconds_offset,
-                WiFi.SSID().c_str(),
-                password);
+                //WiFi.SSID().c_str(),
+                //password);
+                db[SH("db_ssid")].toString(),   //One of 2 Variants for access DB records
+                db[SH("db_pass")].toString(),
+                db[dbkeys::db_ssid_AP].toString(), // The other variant
+                db[dbkeys::db_pass_AP].toString(),
+                db[dbkeys::db_ntp_server].toString(),
+                db[dbkeys::db_timezone].toString(),
+                db[dbkeys::db_inverse_input1].toString(),
+                db[dbkeys::db_scales].toString(),
+                db[dbkeys::db_p2].toString(),
+                db[dbkeys::db_p3].toString()
+                    
+                //bbb.c_str()
+                );
         request->send(200, "text/plain", buffer);
         Serial.println("Buffer:\n");
         Serial.println(buffer);
     });
     server.on("/set_wifi", HTTP_GET, [](AsyncWebServerRequest *request) {
-        String ssid = request->getParam("ssid")->value();
-        String password = request->getParam("password")->value();
+        String ssidhtml = request->getParam("ssid")->value();
+        String passwordhtml = request->getParam("pass")->value();
+        String ssidhtmlAP = request->getParam("ssid_AP")->value();
+        String passwordhtmlAP = request->getParam("pass_AP")->value();
+        String rrr = request->methodToString(); //may be string
         request->send(200, "text/plain", "200");
         delay(20);
-        WiFi.softAPdisconnect(true);
-        WiFi.mode(WIFI_STA);
-        WiFi.persistent(true);
-        WiFi.begin(ssid, password);
+        //WiFi.softAPdisconnect(true);
+        //WiFi.mode(WIFI_STA);
+        //WiFi.persistent(true);
+        Serial.println("Set/wifi_pressed\n");
+        Serial.println(rrr);
+        Serial.println(ssidhtml);
+        Serial.println(passwordhtml);
+        //Serial.println(ssidhtmlAP);
+        //Serial.println(passwordhtmlAP);
+        //WiFi.begin(ssidhtml, passwordhtml);
+        db[dbkeys::db_ssid] = ssidhtml;
+        db[dbkeys::db_pass] = passwordhtml;
+        db[dbkeys::db_ssid_AP] = ssidhtmlAP;
+        db[dbkeys::db_pass_AP] = passwordhtmlAP; 
+        Serial.println("dbstore settings:");
+        Serial.println(db["db_ssid"].c_str());
+        Serial.println(db[dbkeys::db_pass].c_str());
+        Serial.println(db[dbkeys::db_ssid_AP].c_str());
+        Serial.println(db[dbkeys::db_pass_AP].c_str());
+        
     });
 
     server.on("/sendParameters", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -170,10 +227,11 @@ void startWebServer() {
         //String p31 = request->getParam("p3")->value();
         request->send(200, "text/plain", "200");
         delay(20);
+        db["db_ssid"] = "labelssid1"; //template
         Serial.print(ssid1);
         Serial.print(pass1);
         Serial.print("\n");
-
+        Serial.print(db["db_ssid"]);
         
 
 //&ssid=${ssid}&pass=${pass}&ssid_AP=${ssid_AP}&pass_AP=${pass_AP}
@@ -215,11 +273,12 @@ void handleWiFi() {
     } else {
         WiFi.mode(WIFI_AP);
         Serial.print("Soft_APstart\n");
-        WiFi.softAP(ssid, password);
+        Serial.println(ssid_AP);
+        Serial.println(password_AP);
+        WiFi.softAP(ssid_AP, password_AP);
         WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
         
-            Serial.print("Clock_AP vfdclock\n");
-            //setCursorVFD(0x45);
+            
             Serial.print("192.168.4.2\n");
             delay(5000);
         
