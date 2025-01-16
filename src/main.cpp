@@ -18,7 +18,7 @@
 
 
 #include <LittleFS.h>
-GyverDBFile db(&LittleFS, "/data3.db");
+GyverDBFile db(&LittleFS, "/data4.db");
 
 //#include <SettingsGyver.h>
 //SettingsGyver sett("My Settings", &db);
@@ -39,17 +39,22 @@ enum dbkeys : size_t {
 
 
 
-#define MAX_EEPROM_STRING_SIZE 256
-
-static String ssid = "IoTT111";
+#define MAX_EEPROM_STRING_SIZE 256 
+//global_variables for db parameters . Values are only for set variables types.
+static String ssid = "IoTT";
 static String password = "1111qQ1111qQ,@,@";
 static String ssid_AP = "AP1";
 static String password_AP = "00000000";
-    
-
+static String ntp_server = "pool.ntp.org";
+static String timezone = "7200";
+static String inverse_input1 = "true";
+static String scales = "false";
+static String p2 = "1234";
+static String p3 = "pam_param";
+        
 IPAddress apIP(192, 168, 4, 2);
 
-// counters
+// counters. 
 byte div_step = 0;
 unsigned long last_millis = 0;
 unsigned long current_millis;
@@ -67,16 +72,16 @@ void setup() {
     Serial.println("setup_begin\n");
     
     
-    db.init(dbkeys::db_ssid, "labelssid");
-    db.init(dbkeys::db_pass, "12345678");
+    db.init(dbkeys::db_ssid, "IoTT");
+    db.init(dbkeys::db_pass, "12345678qq12345678qq12345678");
     db.init(dbkeys::db_ssid_AP, "AP_IoTT");
-    db.init(dbkeys::db_pass_AP, "12345678");
+    db.init(dbkeys::db_pass_AP, "12345678qq");
     db.init(dbkeys::db_ntp_server, "pool.ntp.org");
     db.init(dbkeys::db_timezone, "7200");
-    db.init(dbkeys::db_inverse_input1, "false");
-    db.init(dbkeys::db_scales, "true");
+    db.init(dbkeys::db_inverse_input1, "true");
+    db.init(dbkeys::db_scales, "false");
     db.init(dbkeys::db_p2, "1234");
-    db.init(dbkeys::db_p3, "param");
+    db.init(dbkeys::db_p3, "pam_param");
     
     ssid = db[dbkeys::db_ssid].toString();
     password = db[dbkeys::db_pass].toString();
@@ -107,6 +112,7 @@ void setCursorVFD(byte place) {
     //                        EOT   SOH     P          ETB
     byte cursor_position[] = {0x04, 0x01, 0x50, place, 0x17};
     Serial.write(cursor_position, sizeof(cursor_position));
+
 }
 
 
@@ -183,10 +189,10 @@ void startWebServer() {
         Serial.println(buffer);
     });
     server.on("/set_wifi", HTTP_GET, [](AsyncWebServerRequest *request) {
-        String ssidhtml = request->getParam("ssid")->value();
-        String passwordhtml = request->getParam("pass")->value();
-        String ssidhtmlAP = request->getParam("ssid_AP")->value();
-        String passwordhtmlAP = request->getParam("pass_AP")->value();
+        ssid = request->getParam("ssid")->value();
+        password = request->getParam("pass")->value();
+        ssid_AP = request->getParam("ssid_AP")->value();
+        password_AP = request->getParam("pass_AP")->value();
         String rrr = request->methodToString(); //may be string
         request->send(200, "text/plain", "200");
         delay(20);
@@ -195,15 +201,15 @@ void startWebServer() {
         //WiFi.persistent(true);
         Serial.println("Set/wifi_pressed\n");
         Serial.println(rrr);
-        Serial.println(ssidhtml);
-        Serial.println(passwordhtml);
+        Serial.println(ssid);
+        Serial.println(password);
         //Serial.println(ssidhtmlAP);
         //Serial.println(passwordhtmlAP);
         //WiFi.begin(ssidhtml, passwordhtml);
-        db[dbkeys::db_ssid] = ssidhtml;
-        db[dbkeys::db_pass] = passwordhtml;
-        db[dbkeys::db_ssid_AP] = ssidhtmlAP;
-        db[dbkeys::db_pass_AP] = passwordhtmlAP; 
+        db[dbkeys::db_ssid] = ssid;
+        db[dbkeys::db_pass] = password;
+        db[dbkeys::db_ssid_AP] = ssid_AP;
+        db[dbkeys::db_pass_AP] = password_AP; 
         Serial.println("dbstore settings:");
         Serial.println(db["db_ssid"].c_str());
         Serial.println(db[dbkeys::db_pass].c_str());
@@ -214,24 +220,44 @@ void startWebServer() {
 
     server.on("/sendParameters", HTTP_GET, [](AsyncWebServerRequest *request) {
         char buffer[200];
+        //const url = `/sendParameters?
+        //&ssid=${ssid}&pass=${pass}&ssid_AP=${ssid_AP}&pass_AP=${pass_AP}
+        //&ntp_server=${ntp_server}&timezone=${timezone}
+        //&inverse_input1=${inverse_input1}&scales=${scales}
+        //&p2=${p2}&p3=${p3}`;
+    
         Serial.println("/sendParameters called\n");
-        String ssid1 = request->getParam("ssid")->value();
-        String pass1 = request->getParam("pass")->value();
-        //String ssid_AP1 = request->getParam("ssid_AP")->value();
-        //String pass_AP1 = request->getParam("pass_AP")->value();
-        //String ntp_server1 = request->getParam("ntp_server")->value();
-        //String timezone1 = request->getParam("timezone")->value();
-        //String inverse_input11 = request->getParam("inverse_input1")->value();
-        //String scales1 = request->getParam("scales")->value();
-        //String p21 = request->getParam("p2")->value();
-        //String p31 = request->getParam("p3")->value();
+        ssid = request->getParam("ssid")->value();
+        password = request->getParam("pass")->value();
+        ssid_AP = request->getParam("ssid_AP")->value();
+        password_AP = request->getParam("pass_AP")->value();
+        ntp_server = request->getParam("ntp_server")->value();
+        timezone = request->getParam("timezone")->value();
+        inverse_input1 = request->getParam("inverse_input1")->value();
+        scales = request->getParam("scales")->value();
+        p2 = request->getParam("p2")->value();
+        p3 = request->getParam("p3")->value();
         request->send(200, "text/plain", "200");
         delay(20);
-        db["db_ssid"] = "labelssid1"; //template
-        Serial.print(ssid1);
-        Serial.print(pass1);
+        //db["db_ssid"] = "labelssid1"; //template
+        db[dbkeys::db_ssid] = ssid;
+        db[dbkeys::db_pass] = password;
+        db[dbkeys::db_ssid_AP] = ssid_AP;
+        db[dbkeys::db_pass_AP] = password_AP;
+        db[dbkeys::db_ntp_server] = ntp_server;
+        db[dbkeys::db_timezone] = timezone;
+        db[dbkeys::db_inverse_input1] = inverse_input1;
+        db[dbkeys::db_scales] = scales; 
+        db[dbkeys::db_p2] = p2;
+        db[dbkeys::db_p3] = p3;
+        db.update(); 
+        Serial.println("Saved parameters: ");
+        Serial.println(ssid + " " + password + " " + ssid_AP + " " + password_AP + " " + ntp_server + " " + timezone + " " + inverse_input1 + " " + scales + " " + p2 + " " + p3);
         Serial.print("\n");
         Serial.print(db["db_ssid"]);
+        if (scales == "true") {
+        db.clear();    
+        }
         
 
 //&ssid=${ssid}&pass=${pass}&ssid_AP=${ssid_AP}&pass_AP=${pass_AP}
